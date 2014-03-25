@@ -34,7 +34,7 @@ server.on('request',function(req,res){
                     res.write('not found!:' + err);
                     return res.end();
                 }
-
+//Parseのデータを取って来る。
                 var useId = url.parse(req.url).query.split('=')[1];
                 var https = require('https');
                 var reqOptions = {
@@ -47,24 +47,22 @@ server.on('request',function(req,res){
                     },
                     method: 'get'
                 }
-
                 var dataReqest = https.request(reqOptions, function(response){
                     response.setEncoding('utf8');
                     response.on('data', function (data) {
                         var reportTime = new Date();
                         var parsedData = JSON.parse(data)
                         var setData = parsedData.results;
-                         console.log(setData[0].contactMail)
+//メール送る。
                         var transport = nodemailer.createTransport('SMTP', {
                             host: settings.mailHost,
                             secureConnection: true,
                             port: settings.mailPort,
                             auth: {
                                 user: settings.mailSenderAdd,
-                                pass: settings.mailSenderPass,
+                                pass: settings.mailSenderPass
                             }
                         });
-
                         var msg = {
                             from: settings.mailFrom,
                             to: setData[0].contactMail,
@@ -73,7 +71,6 @@ server.on('request',function(req,res){
                                 + reportTime.getHours() + ':' + reportTime.getMinutes() + '.' + reportTime.getSeconds() + /\n/
                                 + settings.mailText1;
                         };
-
                         transport.sendMail(msg, function(error){
                             if (error) {
                                 console.log('送信失敗');
@@ -83,6 +80,7 @@ server.on('request',function(req,res){
                             }
                             msg.transport.close();
                         });
+//オブジェクトIDを元に、データベースを編集してフラグ立てる。
                     });
                 })
                 
