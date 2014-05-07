@@ -1,6 +1,7 @@
 var http = require('http');
 var url = require('url');
 var fs = require('fs');
+var querystring = require('querystring');
 var nodemailer = require('nodemailer');
 var settings = require('./settings');
 
@@ -51,7 +52,7 @@ server.on('request',function(req,res){
                     response.setEncoding('utf8');
                     response.on('data', function (data) {
                         var reportTime = new Date();
-                        var parsedData = JSON.parse(data)
+                        var parsedData = JSON.parse(data);
                         var setData = parsedData.results;
 //メール送る。
                         var transport = nodemailer.createTransport('SMTP', {
@@ -81,9 +82,40 @@ server.on('request',function(req,res){
                             msg.transport.close();
                         });
 //オブジェクトIDを元に、データベースを編集してフラグ立てる。
+                        var postOptions = {
+                            host: 'api.parse.com',
+                            path: '/1/classes/locationData',
+                            headers: {
+                                'Content-Type' : 'application/json',
+                                'X-Parse-Application-Id': settings.parseAppId,
+                                'X-Parse-REST-API-Key': settings.parseRestKey
+                            },
+                            method: 'post'
+                        }
+                        var postData = querystring.stringify({
+                            name : setData[0].userName,
+                            id : setData[0].userId,
+                            locLat : setData[0].geoCodeLat,
+                            locLong : setData[0].geoCodeLong,
+                            address : setData[0].address
+                        })
+                        var postRequest = https.request(postOptions,function(postRes){
+                            var body = '';
+                            postRes.setEncoding('utf8');
+                            postRes.on('data',function(chunk){
+                                //ためしに。
+                                console.log('chunk : ' + chunk)
+                            })
+                        })
+                        postRequest.on('error', function(e){
+                            console.log('POST err: '+ e.message)
+                        })
+                        //まだよくわかんない
+                        postRequest.write('data\n')
+                        postRequest.end(postData)
                     });
                 })
-                
+
                 dataReqest.on('error', function(e) {
                   console.log('problem with request: ' + e.message);
                 });
