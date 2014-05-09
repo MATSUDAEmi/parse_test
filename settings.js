@@ -1,10 +1,10 @@
-exports.parseAppId = 'AWGwqZGRVAyHP3TEwSKBG5FuoB08saavcJjxLuoM';
-exports.parseRestKey = '8jeYFitqu11bIhbKoaiNrOm2Usm2K9BEXEKetiuo';
+exports.parseAppId = 'xxx';
+exports.parseRestKey = 'xxx';
 exports.mailHost = 'smtp.gmail.com';
 exports.mailPort = 465;
-exports.mailSenderAdd = 'ariyo1331@gmail.com';
-exports.mailSenderPass = '1360hn1360';
-exports.mailFrom = 'ariyo1331@gmail.com';
+exports.mailSenderAdd = 'xxx@gmail.com';
+exports.mailSenderPass = 'xxx';
+exports.mailFrom = 'xxx@gmail.com';
 exports.mailSubject = ' タイトル';
 exports.mailText0 = ' 本文１';
 exports.mailText1 = '本文２';
