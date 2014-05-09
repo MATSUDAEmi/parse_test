@@ -1,0 +1,118 @@
+<!doctype html>
+<head>
+  <meta charset="utf-8">
+
+  <title>My Parse App</title>
+  <meta name="description" content="My Parse App">
+  <meta name="viewport" content="width=device-width">
+  <!--<link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/styles.css">-->
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+  <script type="text/javascript" src="http://www.parsecdn.com/js/parse-1.2.18.min.js"></script>
+  <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?key=AIzaSyC8Q3k5vun7Q_dlhaBq1ub3hbg7IOe8HCI&sensor=true">
+    </script>
+<style>
+  .sendBtn {
+    padding: 10px;
+    background: MistyRose;
+    border: 3px solid gray;
+    border-radius: 3px;
+    color:rgb(178, 190, 181);
+  }
+</style>
+</head>
+
+<body>
+
+<p>ID<input type="text" id="userId" readonly></p>
+<p>お名前<input type="text" id="userName"></p>
+<p>住所<input type="text" id="address"></p>
+<p><input type="number" id="geoCodeLat"><input type="number" id="geoCodeLong"></p>
+<div id="map_canvas" style="width: 500px; height: 300px"></div>
+<p>連絡先のお名前<input type="text" id="contactName"></p>
+<p>連絡先のemailアドレス<input type="email" id="contactMail"></p>
+<p class="sendBtn">送信</p>
+ 
+  <script type="text/javascript">
+$(function(){
+
+    Parse.initialize("AWGwqZGRVAyHP3TEwSKBG5FuoB08saavcJjxLuoM", "Er7tdHjg2w1hnXVWMc4mtassroyymOUsIWZUPqw5");
+    var geoLat //緯度
+      , geoLong; //経度
+    var getGeoLoc = function(){
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function(position){
+            geoLat = position.coords.latitude;
+            geoLong = position.coords.longitude;
+
+            if (geoLat !== undefined && geoLong !== undefined){
+              var inputLat = $('#geoCodeLat')
+                , inputLong = $('#geoCodeLong')
+                , inputAddress = $('#address')
+                , mapCenter = new google.maps.LatLng(geoLat,geoLong)
+                , mapOptions = {
+                  center : mapCenter,
+                  zoom: 13,
+                  mapTypeId: google.maps.MapTypeId.ROADMAP
+                }
+
+                inputLat.val(geoLat);
+                inputLong.val(geoLong);
+                jQuery.get('http://maps.googleapis.com/maps/api/geocode/json?latlng='+ geoLat +','+ geoLong +'&sensor=true', function(data, textStatus, xhr) {
+                  var mapData = data;
+                  inputAddress.val(mapData.results[0].formatted_address);
+                });
+                
+                var map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
+                var marker = new google.maps.Marker({
+                    position: mapCenter,
+                    map: map,
+                    title: 'Here?'
+                });
+
+              ;
+            }
+          }
+        );
+      }
+    }
+    getGeoLoc()
+
+    $('#address').on('blur',function(){
+      var geocoder = new google.maps.Geocoder();
+      geocoder.geocode({
+        address: $(this).val()
+      } , function(data, status){
+        console.log(data)
+      })
+    })
+    $('#userId').val(window.location.hash.split('#')[1]);
+
+    var UserData = Parse.Object.extend("UserData");
+    var userData = new UserData();
+    var setData = function(){
+      userData.save({
+        userId : $('#userId').val(),
+        userName: $('#userName').val(),
+        geoCodeLat: $('#geoCodeLat').val(),
+        geoCodeLong: $('#geoCodeLong').val(),
+        address: $('#address').val(),
+        contactName: $('#contactName').val(),
+        contactMail: $('#contactMail').val()
+      }, {
+      success: function(object) {
+        $('body').append('<p>データを送信しました。</p>')
+      },
+      error: function(model, error) {
+        $('body').append('<p>error</p>' + error)
+      }
+    });
+    }
+    $('.sendBtn').on('click',setData)
+
+})
+  </script>
+</body>
+
+</html>
